@@ -13,7 +13,7 @@ const longBreakTime = document.querySelector("#long-break-duration");
 const sessionState = {
     mode: "focus",
     isRunning: false,
-    focusMinutes: 25,
+    focusMinutes: 1,
     breakMinutes: 5,
     remainingSeconds: 25 * 60,
     completedFocusSessions: 0,
@@ -93,6 +93,22 @@ function resetTimer() {
     sessionState.isRunning = false;
     sessionState.timerId = null;
     sessionState.remainingSeconds = sessionState.focusMinutes * 60;
+
+    render();
+}
+
+function completeCurrentSession() {
+    clearInterval(sessionState.timerId);
+    sessionState.timerId = null;
+
+    if (sessionState.mode === "focus") {
+        sessionState.completedFocusSessions += 1;
+        sessionState.mode = "break";
+        sessionState.remainingSeconds = sessionState.breakMinutes * 60;
+    } else {
+        sessionState.mode = "focus";
+        sessionState.remainingSeconds = sessionState.focusMinutes * 60;
+    }
 
     render();
 }
