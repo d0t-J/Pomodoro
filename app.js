@@ -14,8 +14,8 @@ const sessionState = {
     mode: "focus",
     isRunning: false,
     focusMinutes: 1,
-    breakMinutes: 5,
-    remainingSeconds: 25 * 60,
+    breakMinutes: 1,
+    remainingSeconds: 1 * 20,
     completedFocusSessions: 0,
     timerId: null,
 };
@@ -56,9 +56,9 @@ function render() {
 }
 
 function startTimer() {
-    if (sessionState.isRunning) {
-        return;
-    }
+    // if (sessionState.isRunning) {
+    //     return;
+    // }
 
     sessionState.isRunning = true;
 
@@ -93,6 +93,7 @@ function resetTimer() {
     sessionState.isRunning = false;
     sessionState.timerId = null;
     sessionState.remainingSeconds = sessionState.focusMinutes * 60;
+    sessionState.completedFocusSessions = 0;
 
     render();
 }
@@ -104,15 +105,21 @@ function completeCurrentSession() {
     if (sessionState.mode === "focus") {
         sessionState.completedFocusSessions += 1;
         sessionState.mode = "break";
-        sessionState.remainingSeconds = sessionState.breakMinutes * 60;
+        sessionState.remainingSeconds = sessionState.breakMinutes * 10;
     } else {
         sessionState.mode = "focus";
-        sessionState.remainingSeconds = sessionState.focusMinutes * 60;
+        sessionState.remainingSeconds = sessionState.focusMinutes * 10;
     }
 
     render();
-}
+    // ! Debug statement
+    console.log(sessionState);
 
+    if (startBtn.disabled) {
+        startBtn.disabled = false;
+        pauseBtn.disabled = true;
+    }
+}
 startBtn.addEventListener("click", startTimer);
 pauseBtn.addEventListener("click", pauseTimer);
 resetBtn.addEventListener("click", resetTimer);
