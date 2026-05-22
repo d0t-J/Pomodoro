@@ -27,13 +27,23 @@ function formatTime(totalSeconds) {
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
+function tick() {
+    if (sessionState.remainingSeconds > 0) {
+        sessionState.remainingSeconds -= 1;
+        render();
+        return;
+    } else if (sessionState.remainingSeconds === 0) {
+        completeCurrentSession();
+    }
+}
+
 function render() {
     timerDisplay.textContent = formatTime(sessionState.remainingSeconds);
 
     timerStatus.textContent =
         sessionState.mode === "focus"
             ? sessionState.isRunning
-                ? "Focus Session in progress "
+                ? "Focus session in progress "
                 : "Focus session ready"
             : sessionState.isRunning
               ? "Break in progress"
@@ -44,5 +54,51 @@ function render() {
     startBtn.disabled = sessionState.isRunning;
     pauseBtn.disabled = !sessionState.isRunning;
 }
+
+function startTimer() {
+    if (sessionState.isRunning) {
+        return;
+    }
+
+    sessionState.isRunning = true;
+
+    sessionState.timerId = setInterval(tick, 1000);
+    // ! Debug statement
+    console.log(`Timer ID upon starting timer: ${sessionState.timerId}`);
+
+    render();
+}
+
+function pauseTimer() {
+    if (!sessionState.isRunning) {
+        return;
+    }
+
+    clearInterval(sessionState.timerId);
+
+    sessionState.isRunning = false;
+    sessionState.timerId = null;
+
+    // ! Debug statement
+    console.log(`Timer ID upon pausing timer: ${sessionState.timerId}`);
+
+    render();
+    timerStatus.textContent = "Focus session paused";
+}
+
+function resetTimer() {
+    clearInterval(sessionState.timerId);
+
+    sessionState.mode = "focus";
+    sessionState.isRunning = false;
+    sessionState.timerId = null;
+    sessionState.remainingSeconds = sessionState.focusMinutes * 60;
+
+    render();
+}
+
+startBtn.addEventListener("click", startTimer);
+pauseBtn.addEventListener("click", pauseTimer);
+resetBtn.addEventListener("click", resetTimer);
 
 render();
