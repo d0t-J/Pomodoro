@@ -6,17 +6,25 @@ const startBtn = document.querySelector("#start-btn");
 const pauseBtn = document.querySelector("#pause-btn");
 const resetBtn = document.querySelector("#reset-btn");
 
+const settingsForm = document.querySelector("#settings-form");
 const focusTime = document.querySelector("#focus-duration");
 const shortBreakTime = document.querySelector("#short-break-duration");
 const longBreakTime = document.querySelector("#long-break-duration");
+
+const DEFAULT_SETTINGS = {
+    focusMinutes: 1,
+    shortBreakMinutes: 1,
+    longBreakMinutes: 1,
+};
 
 const sessionState = {
     mode: "focus",
     isRunning: false,
     isPaused: false,
-    focusMinutes: 1,
-    breakMinutes: 1,
-    remainingSeconds: 1 * 10,
+    focusMinutes: DEFAULT_SETTINGS.focusMinutes,
+    shortBreakMinutes: DEFAULT_SETTINGS.shortBreakMinutes,
+    longBreakMinutes: DEFAULT_SETTINGS.longBreakMinutes,
+    remainingSeconds: DEFAULT_SETTINGS.focusMinutes * 10,
     completedFocusSessions: 0,
     timerId: null,
 };
@@ -29,12 +37,14 @@ function formatTime(totalSeconds) {
 }
 
 function tick() {
-    if (sessionState.remainingSeconds > 0) {
+    if (sessionState.remainingSeconds > 1) {
         sessionState.remainingSeconds -= 1;
         render();
         return;
     }
 
+    sessionState.remainingSeconds = 0;
+    render();
     completeCurrentSession();
 }
 
@@ -102,7 +112,16 @@ function resetTimer() {
     sessionState.isRunning = false;
     sessionState.isPaused = false;
     sessionState.timerId = null;
-    sessionState.remainingSeconds = sessionState.focusMinutes * 60;
+
+    sessionState.focusMinutes = DEFAULT_SETTINGS.focusMinutes;
+    sessionState.shortBreakMinutes = DEFAULT_SETTINGS.shortBreakMinutes;
+    sessionState.longBreakMinutes = DEFAULT_SETTINGS.longBreakMinutes;
+
+    focusTime.value = DEFAULT_SETTINGS.focusMinutes;
+    shortBreakTime.value = DEFAULT_SETTINGS.shortBreakMinutes;
+    longBreakTime.value = DEFAULT_SETTINGS.longBreakMinutes;
+
+    sessionState.remainingSeconds = DEFAULT_SETTINGS.focusMinutes * 10;
     sessionState.completedFocusSessions = 0;
 
     render();
@@ -115,7 +134,7 @@ function completeCurrentSession() {
     if (sessionState.mode === "focus") {
         sessionState.completedFocusSessions += 1;
         sessionState.mode = "break";
-        sessionState.remainingSeconds = sessionState.breakMinutes * 10;
+        sessionState.remainingSeconds = sessionState.shortBreakMinutes * 10;
     } else {
         sessionState.mode = "focus";
         sessionState.remainingSeconds = sessionState.focusMinutes * 10;
@@ -130,8 +149,36 @@ function completeCurrentSession() {
     console.log(sessionState);
 }
 
+function handleSettingsFormSubmit(e) {
+    e.preventDefault();
+
+    const newFocusMinutes = Number(focusTime.value);
+    const newShortBreakMinutes = Number(shortBreakTime.value);
+    const newLongBreakMinutes = Number(longBreakTime.value);
+
+    if (
+        Number.isNaN(newFocusMinutes) ||
+        Number.isNaN(newShortBreakMinutes) ||
+        Number.isNaN(newLongBreakMinutes) ||
+        newFocusMinutes < 1 ||
+        newShortBreakMinutes < 1 ||
+        newLongBreakMinutes < 1
+    ) {
+        return;
+    }
+
+    sessionState.focusMinutes = newFocusMinutes;
+    sessionState.shortBreakMinutes = newShortBreakMinutes;
+    sessionState.longBreakMinutes = newLongBreakMinutes;
+    sessionState.remainingSeconds = newFocusMinutes * 10;
+
+    render();
+}
+
 startBtn.addEventListener("click", startTimer);
 pauseBtn.addEventListener("click", pauseTimer);
 resetBtn.addEventListener("click", resetTimer);
+
+settingsForm.addEventListener("submit", handleSettingsFormSubmit);
 
 render();
