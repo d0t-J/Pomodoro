@@ -13,9 +13,10 @@ const longBreakTime = document.querySelector("#long-break-duration");
 const sessionState = {
     mode: "focus",
     isRunning: false,
+    isPaused: false,
     focusMinutes: 1,
     breakMinutes: 1,
-    remainingSeconds: 1 * 20,
+    remainingSeconds: 1 * 10,
     completedFocusSessions: 0,
     timerId: null,
 };
@@ -32,37 +33,45 @@ function tick() {
         sessionState.remainingSeconds -= 1;
         render();
         return;
-    } else if (sessionState.remainingSeconds === 0) {
-        completeCurrentSession();
     }
+
+    completeCurrentSession();
 }
 
 function render() {
     timerDisplay.textContent = formatTime(sessionState.remainingSeconds);
 
-    timerStatus.textContent =
-        sessionState.mode === "focus"
-            ? sessionState.isRunning
-                ? "Focus session in progress "
-                : "Focus session ready"
-            : sessionState.isRunning
-              ? "Break in progress"
-              : "Break ready";
+    if (sessionState.isPaused) {
+        timerStatus.textContent =
+            sessionState.mode === "focus"
+                ? "Focus session paused"
+                : "Break paused";
+    } else if (sessionState.mode === "focus") {
+        timerStatus.textContent = sessionState.isRunning
+            ? "Focus session in progress"
+            : "Focus session ready";
+    } else {
+        timerStatus.textContent = sessionState.isRunning
+            ? "Break in progress"
+            : "Break ready";
+    }
 
     cycles.textContent = `Cycles Completed: ${sessionState.completedFocusSessions}`;
 
     startBtn.disabled = sessionState.isRunning;
+    startBtn.textContent = sessionState.isPaused ? "Resume" : "Start";
     pauseBtn.disabled = !sessionState.isRunning;
 }
 
 function startTimer() {
-    // if (sessionState.isRunning) {
-    //     return;
-    // }
+    if (sessionState.isRunning) {
+        return;
+    }
 
     sessionState.isRunning = true;
-
+    sessionState.isPaused = false;
     sessionState.timerId = setInterval(tick, 1000);
+
     // ! Debug statement
     console.log(`Timer ID upon starting timer: ${sessionState.timerId}`);
 
@@ -77,13 +86,13 @@ function pauseTimer() {
     clearInterval(sessionState.timerId);
 
     sessionState.isRunning = false;
+    sessionState.isPaused = true;
     sessionState.timerId = null;
 
     // ! Debug statement
     console.log(`Timer ID upon pausing timer: ${sessionState.timerId}`);
 
     render();
-    timerStatus.textContent = "Focus session paused";
 }
 
 function resetTimer() {
@@ -91,6 +100,7 @@ function resetTimer() {
 
     sessionState.mode = "focus";
     sessionState.isRunning = false;
+    sessionState.isPaused = false;
     sessionState.timerId = null;
     sessionState.remainingSeconds = sessionState.focusMinutes * 60;
     sessionState.completedFocusSessions = 0;
@@ -111,15 +121,15 @@ function completeCurrentSession() {
         sessionState.remainingSeconds = sessionState.focusMinutes * 10;
     }
 
+    sessionState.isRunning = true;
+    sessionState.isPaused = false;
+    sessionState.timerId = setInterval(tick, 1000);
+
     render();
     // ! Debug statement
     console.log(sessionState);
-
-    if (startBtn.disabled) {
-        startBtn.disabled = false;
-        pauseBtn.disabled = true;
-    }
 }
+
 startBtn.addEventListener("click", startTimer);
 pauseBtn.addEventListener("click", pauseTimer);
 resetBtn.addEventListener("click", resetTimer);
