@@ -11,6 +11,8 @@ const focusTime = document.querySelector("#focus-duration");
 const shortBreakTime = document.querySelector("#short-break-duration");
 const longBreakTime = document.querySelector("#long-break-duration");
 
+const historyList = document.querySelector("#history-list");
+
 const DEFAULT_SETTINGS = {
     focusMinutes: 1,
     shortBreakMinutes: 1,
@@ -27,6 +29,7 @@ const sessionState = {
     remainingSeconds: DEFAULT_SETTINGS.focusMinutes * 10,
     completedFocusSessions: 0,
     timerId: null,
+    history: [],
 };
 
 function formatTime(totalSeconds) {
@@ -71,6 +74,23 @@ function render() {
     startBtn.disabled = sessionState.isRunning;
     startBtn.textContent = sessionState.isPaused ? "Resume" : "Start";
     pauseBtn.disabled = !sessionState.isRunning;
+
+    renderHistory();
+}
+
+function renderHistory() {
+    historyList.innerHTML = "";
+
+    sessionState.history.forEach((session) => {
+        const historyEntry = document.createElement("li");
+        historyEntry.innerHTML = `
+        <article>
+            <h4>${session.duration}:00 Focus session</h4>
+            <time>${session.completedAt}</time>
+        </article>
+        `;
+        historyList.appendChild(historyEntry);
+    });
 }
 
 function startTimer() {
@@ -112,17 +132,14 @@ function resetTimer() {
     sessionState.isRunning = false;
     sessionState.isPaused = false;
     sessionState.timerId = null;
-
+A
     sessionState.focusMinutes = DEFAULT_SETTINGS.focusMinutes;
     sessionState.shortBreakMinutes = DEFAULT_SETTINGS.shortBreakMinutes;
     sessionState.longBreakMinutes = DEFAULT_SETTINGS.longBreakMinutes;
 
-    focusTime.value = DEFAULT_SETTINGS.focusMinutes;
-    shortBreakTime.value = DEFAULT_SETTINGS.shortBreakMinutes;
-    longBreakTime.value = DEFAULT_SETTINGS.longBreakMinutes;
-
     sessionState.remainingSeconds = DEFAULT_SETTINGS.focusMinutes * 10;
     sessionState.completedFocusSessions = 0;
+    sessionState.history = [];
 
     render();
 }
@@ -133,6 +150,17 @@ function completeCurrentSession() {
 
     if (sessionState.mode === "focus") {
         sessionState.completedFocusSessions += 1;
+
+        const completedSession = {
+            type: "focus",
+            completedAt: new Date().toLocaleTimeString([], {
+                hour: "numeric",
+                minute: "2-digit",
+            }),
+            duration: sessionState.focusMinutes,
+        };
+        sessionState.history.unshift(completedSession);
+
         sessionState.mode = "break";
         sessionState.remainingSeconds = sessionState.shortBreakMinutes * 10;
     } else {
