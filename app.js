@@ -43,6 +43,10 @@ function formatTime(totalSeconds) {
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
+function getTodayDate() {
+    return new Date().toISOString().split("T")[0];
+}
+
 function tick() {
     if (sessionState.remainingSeconds > 1) {
         sessionState.remainingSeconds -= 1;
@@ -98,10 +102,12 @@ function renderHistory() {
 }
 
 function saveHistoryLocal() {
-    localStorage.setItem(
-        STORAGE_KEYS.history,
-        JSON.stringify(sessionState.history),
-    );
+    const historyPayload = {
+        date: getTodayDate(),
+        history: sessionState.history,
+    };
+
+    localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(historyPayload));
 }
 
 function loadHistoryLocal() {
@@ -110,7 +116,15 @@ function loadHistoryLocal() {
     if (!savedHistory) {
         return;
     }
-    sessionState.history = JSON.parse(savedHistory);
+    const parsedHistory = JSON.parse(savedHistory);
+
+    const isSameDay = parsedHistory.date === getTodayDate();
+
+    if (!isSameDay) {
+        localStorage.removeItem(STORAGE_KEYS.history);
+        return;
+    }
+    sessionState.history = parsedHistory.history;
 }
 
 function startTimer() {
