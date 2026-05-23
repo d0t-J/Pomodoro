@@ -13,6 +13,10 @@ const longBreakTime = document.querySelector("#long-break-duration");
 
 const historyList = document.querySelector("#history-list");
 
+const STORAGE_KEYS = {
+    history: "pomodoro",
+};
+
 const DEFAULT_SETTINGS = {
     focusMinutes: 1,
     shortBreakMinutes: 1,
@@ -93,6 +97,22 @@ function renderHistory() {
     });
 }
 
+function saveHistoryLocal() {
+    localStorage.setItem(
+        STORAGE_KEYS.history,
+        JSON.stringify(sessionState.history),
+    );
+}
+
+function loadHistoryLocal() {
+    const savedHistory = localStorage.getItem(STORAGE_KEYS.history);
+
+    if (!savedHistory) {
+        return;
+    }
+    sessionState.history = JSON.parse(savedHistory);
+}
+
 function startTimer() {
     if (sessionState.isRunning) {
         return;
@@ -132,7 +152,7 @@ function resetTimer() {
     sessionState.isRunning = false;
     sessionState.isPaused = false;
     sessionState.timerId = null;
-A
+
     sessionState.focusMinutes = DEFAULT_SETTINGS.focusMinutes;
     sessionState.shortBreakMinutes = DEFAULT_SETTINGS.shortBreakMinutes;
     sessionState.longBreakMinutes = DEFAULT_SETTINGS.longBreakMinutes;
@@ -140,6 +160,7 @@ A
     sessionState.remainingSeconds = DEFAULT_SETTINGS.focusMinutes * 10;
     sessionState.completedFocusSessions = 0;
     sessionState.history = [];
+    localStorage.removeItem(STORAGE_KEYS.history);
 
     render();
 }
@@ -160,6 +181,7 @@ function completeCurrentSession() {
             duration: sessionState.focusMinutes,
         };
         sessionState.history.unshift(completedSession);
+        saveHistoryLocal();
 
         sessionState.mode = "break";
         sessionState.remainingSeconds = sessionState.shortBreakMinutes * 10;
@@ -209,4 +231,5 @@ resetBtn.addEventListener("click", resetTimer);
 
 settingsForm.addEventListener("submit", handleSettingsFormSubmit);
 
+loadHistoryLocal();
 render();
