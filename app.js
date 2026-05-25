@@ -17,6 +17,8 @@ const STORAGE_KEYS = {
     history: "pomodoro",
 };
 
+const SECONDS_PER_MINUTE = 60;
+
 const DEFAULT_SETTINGS = {
     focusMinutes: 1,
     shortBreakMinutes: 1,
@@ -30,7 +32,7 @@ const sessionState = {
     focusMinutes: DEFAULT_SETTINGS.focusMinutes,
     shortBreakMinutes: DEFAULT_SETTINGS.shortBreakMinutes,
     longBreakMinutes: DEFAULT_SETTINGS.longBreakMinutes,
-    remainingSeconds: DEFAULT_SETTINGS.focusMinutes * 10,
+    remainingSeconds: DEFAULT_SETTINGS.focusMinutes * SECONDS_PER_MINUTE,
     completedFocusSessions: 0,
     timerId: null,
     history: [],
@@ -171,7 +173,8 @@ function resetTimer() {
     sessionState.shortBreakMinutes = DEFAULT_SETTINGS.shortBreakMinutes;
     sessionState.longBreakMinutes = DEFAULT_SETTINGS.longBreakMinutes;
 
-    sessionState.remainingSeconds = DEFAULT_SETTINGS.focusMinutes * 10;
+    sessionState.remainingSeconds =
+        DEFAULT_SETTINGS.focusMinutes * SECONDS_PER_MINUTE;
     sessionState.completedFocusSessions = 0;
     sessionState.history = [];
     localStorage.removeItem(STORAGE_KEYS.history);
@@ -198,10 +201,12 @@ function completeCurrentSession() {
         saveHistoryLocal();
 
         sessionState.mode = "break";
-        sessionState.remainingSeconds = sessionState.shortBreakMinutes * 10;
+        sessionState.remainingSeconds =
+            sessionState.shortBreakMinutes * SECONDS_PER_MINUTE;
     } else {
         sessionState.mode = "focus";
-        sessionState.remainingSeconds = sessionState.focusMinutes * 10;
+        sessionState.remainingSeconds =
+            sessionState.focusMinutes * SECONDS_PER_MINUTE;
     }
 
     sessionState.isRunning = true;
@@ -234,7 +239,7 @@ function handleSettingsFormSubmit(e) {
     sessionState.focusMinutes = newFocusMinutes;
     sessionState.shortBreakMinutes = newShortBreakMinutes;
     sessionState.longBreakMinutes = newLongBreakMinutes;
-    sessionState.remainingSeconds = newFocusMinutes * 10;
+    sessionState.remainingSeconds = newFocusMinutes * SECONDS_PER_MINUTE;
 
     render();
 }
