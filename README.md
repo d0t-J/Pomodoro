@@ -22,4 +22,4 @@ There is no install or build step required because this is a plain HTML, CSS, an
 
 ## Deployment
 
-Deployed URL: add your Vercel/Netlify/GitHub Pages link here once it is live.
+Deployed URL: https://pomodoro-navy-three.vercel.app/
