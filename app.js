@@ -20,9 +20,9 @@ const STORAGE_KEYS = {
 const SECONDS_PER_MINUTE = 60;
 
 const DEFAULT_SETTINGS = {
-    focusMinutes: 1,
-    shortBreakMinutes: 1,
-    longBreakMinutes: 1,
+    focusMinutes: 25,
+    shortBreakMinutes: 5,
+    longBreakMinutes: 15,
 };
 
 const sessionState = {
